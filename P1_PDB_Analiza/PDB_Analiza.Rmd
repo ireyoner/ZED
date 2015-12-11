@@ -14,9 +14,14 @@ output:
 knitr::opts_chunk$set(
                      tidy = TRUE
                      ,eval=TRUE
-                     ,cache=TRUE
+                     ,cache=FALSE
                      )
 ```
+
+# Czytelna z GitHub'a wersja reportu
+
+Czytelna wersja raportu (w formacie html) dostępna jest [tutaj](http://htmlpreview.github.io/?https://github.com/ireyoner/ZED/blob/master/P1_PDB_Analiza/PDB_Analiza.html).
+
 
 # Podsumowanie przeprowadzonej analizy
 

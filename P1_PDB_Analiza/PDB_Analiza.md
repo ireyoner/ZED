@@ -4,6 +4,11 @@ Michał Bartecki
 
 
 
+# Czytelna z GitHub'a wersja reportu
+
+Czytelna wersja raportu (w formacie html) dostępna jest [tutaj](http://htmlpreview.github.io/?https://github.com/ireyoner/ZED/blob/master/P1_PDB_Analiza/PDB_Analiza.html).
+
+
 # Podsumowanie przeprowadzonej analizy
 
 W dostarczonym zbiorze danych liczba atrybutów jest bardzo duża (ok. 800) przez co ich analiza jest bardzo utrudniona. 

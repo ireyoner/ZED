@@ -68,44 +68,49 @@ img {
 
 <div id="TOC">
 <ul>
-<li><a href="#podsumowanie-przeprowadzonej-analizy"><span class="toc-section-number">1</span> Podsumowanie przeprowadzonej analizy</a></li>
-<li><a href="#przygotowanie-do-analizy"><span class="toc-section-number">2</span> Przygotowanie do analizy</a><ul>
-<li><a href="#wykorzystane-biblioteki"><span class="toc-section-number">2.1</span> Wykorzystane biblioteki</a></li>
-<li><a href="#zapewnienie-powtarzalnosci-wynikow"><span class="toc-section-number">2.2</span> Zapewnienie powtarzalności wyników</a></li>
+<li><a href="#czytelna-z-githuba-wersja-reportu"><span class="toc-section-number">1</span> Czytelna z GitHub’a wersja reportu</a></li>
+<li><a href="#podsumowanie-przeprowadzonej-analizy"><span class="toc-section-number">2</span> Podsumowanie przeprowadzonej analizy</a></li>
+<li><a href="#przygotowanie-do-analizy"><span class="toc-section-number">3</span> Przygotowanie do analizy</a><ul>
+<li><a href="#wykorzystane-biblioteki"><span class="toc-section-number">3.1</span> Wykorzystane biblioteki</a></li>
+<li><a href="#zapewnienie-powtarzalnosci-wynikow"><span class="toc-section-number">3.2</span> Zapewnienie powtarzalności wyników</a></li>
 </ul></li>
-<li><a href="#wstepnie-przertwarzanie-danych"><span class="toc-section-number">3</span> Wstępnie przertwarzanie danych</a><ul>
-<li><a href="#wczytywanie-danych-z-pliku"><span class="toc-section-number">3.1</span> Wczytywanie danych z pliku</a></li>
-<li><a href="#wstepna-filtracja-danych"><span class="toc-section-number">3.2</span> Wstępna filtracja danych</a></li>
-<li><a href="#pozostawienie-tylko-unikatowych-par-wartosci-pdb_code-i-res_name"><span class="toc-section-number">3.3</span> Pozostawienie tylko unikatowych par wartości pdb_code i res_name</a></li>
+<li><a href="#wstepnie-przertwarzanie-danych"><span class="toc-section-number">4</span> Wstępnie przertwarzanie danych</a><ul>
+<li><a href="#wczytywanie-danych-z-pliku"><span class="toc-section-number">4.1</span> Wczytywanie danych z pliku</a></li>
+<li><a href="#wstepna-filtracja-danych"><span class="toc-section-number">4.2</span> Wstępna filtracja danych</a></li>
+<li><a href="#pozostawienie-tylko-unikatowych-par-wartosci-pdb_code-i-res_name"><span class="toc-section-number">4.3</span> Pozostawienie tylko unikatowych par wartości pdb_code i res_name</a></li>
 </ul></li>
-<li><a href="#podstawowa-analiza"><span class="toc-section-number">4</span> Podstawowa analiza</a><ul>
-<li><a href="#krotkie-podsumowanie-wartosci-w-kazdej-kolumnie"><span class="toc-section-number">4.1</span> Krótkie podsumowanie wartości w każdej kolumnie:</a></li>
-<li><a href="#dodatkowa-filtracja-danych"><span class="toc-section-number">4.2</span> Dodatkowa filtracja danych</a></li>
-<li><a href="#korelacja-parametrow"><span class="toc-section-number">4.3</span> Korelacja parametrów</a></li>
-<li><a href="#okreslenie-licznosci-klas"><span class="toc-section-number">4.4</span> Określenie liczności klas</a></li>
-<li><a href="#rozkady-liczby-atomow-i-elektronow"><span class="toc-section-number">4.5</span> Rozkłady liczby atomów i elektronów</a></li>
+<li><a href="#podstawowa-analiza"><span class="toc-section-number">5</span> Podstawowa analiza</a><ul>
+<li><a href="#krotkie-podsumowanie-wartosci-w-kazdej-kolumnie"><span class="toc-section-number">5.1</span> Krótkie podsumowanie wartości w każdej kolumnie:</a></li>
+<li><a href="#dodatkowa-filtracja-danych"><span class="toc-section-number">5.2</span> Dodatkowa filtracja danych</a></li>
+<li><a href="#korelacja-parametrow"><span class="toc-section-number">5.3</span> Korelacja parametrów</a></li>
+<li><a href="#okreslenie-licznosci-klas"><span class="toc-section-number">5.4</span> Określenie liczności klas</a></li>
+<li><a href="#rozkady-liczby-atomow-i-elektronow"><span class="toc-section-number">5.5</span> Rozkłady liczby atomów i elektronów</a></li>
 </ul></li>
-<li><a href="#zaawansowana-analiza"><span class="toc-section-number">5</span> Zaawansowana analiza</a><ul>
-<li><a href="#proba-odtorzenia-wykresu-prowadzacego"><span class="toc-section-number">5.1</span> Próba odtorzenia wykresu prowadzącego</a></li>
-<li><a href="#niezgodnosc-liczby-atomow-i-elektronow"><span class="toc-section-number">5.2</span> Niezgodność liczby atomów i elektronów</a></li>
-<li><a href="#rozkad-wartosci-atrybutow-zaczynajacych-sie-od-part_01"><span class="toc-section-number">5.3</span> Rozkład wartości atrybutów zaczynających się od part_01</a></li>
-<li><a href="#miary-r2-i-rmse"><span class="toc-section-number">5.4</span> Miary R^2 i RMSE</a></li>
-<li><a href="#predykcja-wartosci-atrybutu-res_name"><span class="toc-section-number">5.5</span> Predykcja wartości atrybutu res_name</a></li>
+<li><a href="#zaawansowana-analiza"><span class="toc-section-number">6</span> Zaawansowana analiza</a><ul>
+<li><a href="#proba-odtorzenia-wykresu-prowadzacego"><span class="toc-section-number">6.1</span> Próba odtorzenia wykresu prowadzącego</a></li>
+<li><a href="#niezgodnosc-liczby-atomow-i-elektronow"><span class="toc-section-number">6.2</span> Niezgodność liczby atomów i elektronów</a></li>
+<li><a href="#rozkad-wartosci-atrybutow-zaczynajacych-sie-od-part_01"><span class="toc-section-number">6.3</span> Rozkład wartości atrybutów zaczynających się od part_01</a></li>
+<li><a href="#miary-r2-i-rmse"><span class="toc-section-number">6.4</span> Miary R^2 i RMSE</a></li>
+<li><a href="#predykcja-wartosci-atrybutu-res_name"><span class="toc-section-number">6.5</span> Predykcja wartości atrybutu res_name</a></li>
 </ul></li>
 </ul>
 </div>
 
+<div id="czytelna-z-githuba-wersja-reportu" class="section level1">
+<h1><span class="header-section-number">1</span> Czytelna z GitHub’a wersja reportu</h1>
+<p>Czytelna wersja raportu (w formacie html) dostępna jest <a href="http://htmlpreview.github.io/?https://github.com/ireyoner/ZED/blob/master/P1_PDB_Analiza/PDB_Analiza.html">tutaj</a>.</p>
+</div>
 <div id="podsumowanie-przeprowadzonej-analizy" class="section level1">
-<h1><span class="header-section-number">1</span> Podsumowanie przeprowadzonej analizy</h1>
+<h1><span class="header-section-number">2</span> Podsumowanie przeprowadzonej analizy</h1>
 <p>W dostarczonym zbiorze danych liczba atrybutów jest bardzo duża (ok. 800) przez co ich analiza jest bardzo utrudniona. Dodatkowym problemem jest znaczna liczba klas i rozrzut ich liczebności, który waha się od ponad 1100 dla jednej klasy do liczebności 1 dla ponad 2000 klas.</p>
 <p>Przy takiej liczbie atrybutów nie można w prosty sposób wykonać wielu podstawowych operacji analizy danych, jak np. narysowania grafu korelacji.</p>
 <p>Z kolei rozpatrując liczbę i niezrównoważenie ilościowe klas, problemem jest próba stworzenia klasyfikatora.</p>
 <p>Barierą nie do obejścia podczas tej analizy był dla mnie szczególnie brak wiedzy z dziedziny z której pochodzą dane, przez co nieraz zapewne umknęły mi zapewne oczywiste (dla specjalisty z dziedziny Biologii Strukturalnej) wnioski dotyczące widocznych danych i uzyskanych wyników.</p>
 </div>
 <div id="przygotowanie-do-analizy" class="section level1">
-<h1><span class="header-section-number">2</span> Przygotowanie do analizy</h1>
+<h1><span class="header-section-number">3</span> Przygotowanie do analizy</h1>
 <div id="wykorzystane-biblioteki" class="section level2">
-<h2><span class="header-section-number">2.1</span> Wykorzystane biblioteki</h2>
+<h2><span class="header-section-number">3.1</span> Wykorzystane biblioteki</h2>
 <p>Do przygotowania tej analizy zostały wykorzystane następujące biblioteki:</p>
 <pre class="r"><code>library(knitr)
 library(reshape2)
@@ -121,15 +126,15 @@ library(MASS)
 library(caret)</code></pre>
 </div>
 <div id="zapewnienie-powtarzalnosci-wynikow" class="section level2">
-<h2><span class="header-section-number">2.2</span> Zapewnienie powtarzalności wyników</h2>
+<h2><span class="header-section-number">3.2</span> Zapewnienie powtarzalności wyników</h2>
 <p>Zapewnienie powtarzalności wyników odbyło się poprzez wykorzystanie: <a href="https://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy#Answer_to_the_Ultimate_Question_of_Life.2C_the_Universe.2C_and_Everything_.2842.29">the answer to life the universe and everything</a></p>
 <pre class="r"><code>set.seed(42)</code></pre>
 </div>
 </div>
 <div id="wstepnie-przertwarzanie-danych" class="section level1">
-<h1><span class="header-section-number">3</span> Wstępnie przertwarzanie danych</h1>
+<h1><span class="header-section-number">4</span> Wstępnie przertwarzanie danych</h1>
 <div id="wczytywanie-danych-z-pliku" class="section level2">
-<h2><span class="header-section-number">3.1</span> Wczytywanie danych z pliku</h2>
+<h2><span class="header-section-number">4.1</span> Wczytywanie danych z pliku</h2>
 <p>Wczytywanie danych z pliku zostało przyspieszone poprzez stworzenie wcześniej listy klas dla poszczególnych kolumn:</p>
 <pre class="r"><code>classes &lt;- rep(&quot;numeric&quot;, 795)
 classes[c(1:5, 730, 731)] &lt;- &quot;factor&quot;
@@ -138,7 +143,7 @@ PDB.whole.file.data &lt;- read.table(file = &quot;all_summary.txt&quot;, sep = &
     comment.char = &quot;&quot;, na.strings = c(&quot;nan&quot;, &quot;&quot;, &quot; &quot;), colClasses = classes)</code></pre>
 </div>
 <div id="wstepna-filtracja-danych" class="section level2">
-<h2><span class="header-section-number">3.2</span> Wstępna filtracja danych</h2>
+<h2><span class="header-section-number">4.2</span> Wstępna filtracja danych</h2>
 <p>Ze zbioru danych usuwamy nieinteresujące nas wiersze ( według wartości zmiennej res_name). Wcześniej ten sam efekt próbowałem uzyskać wykorzystując funkcję %in%, jednak musiałem zrezygnować z jej użycia, ponieważ pojawiał się błąd o przekroczeniu limitu pamięci przy próbie wywołania funkcji.</p>
 <pre class="r"><code>PDB.filtred.data &lt;- PDB.whole.file.data %&gt;% filter(res_name != &quot;DC&quot;, res_name != 
     &quot;DT&quot;, res_name != &quot;DU&quot;, res_name != &quot;DG&quot;, res_name != &quot;DI&quot;, res_name != 
@@ -148,7 +153,7 @@ PDB.whole.file.data &lt;- read.table(file = &quot;all_summary.txt&quot;, sep = &
     !is.nan(res_name))</code></pre>
 </div>
 <div id="pozostawienie-tylko-unikatowych-par-wartosci-pdb_code-i-res_name" class="section level2">
-<h2><span class="header-section-number">3.3</span> Pozostawienie tylko unikatowych par wartości pdb_code i res_name</h2>
+<h2><span class="header-section-number">4.3</span> Pozostawienie tylko unikatowych par wartości pdb_code i res_name</h2>
 <pre class="r"><code>data.nrow.pre &lt;- nrow(PDB.filtred.data)
 
 PDB.filtred.data &lt;- PDB.filtred.data %&gt;% distinct(pdb_code, res_name)
@@ -158,9 +163,9 @@ data.nrow.post &lt;- nrow(PDB.filtred.data)</code></pre>
 </div>
 </div>
 <div id="podstawowa-analiza" class="section level1">
-<h1><span class="header-section-number">4</span> Podstawowa analiza</h1>
+<h1><span class="header-section-number">5</span> Podstawowa analiza</h1>
 <div id="krotkie-podsumowanie-wartosci-w-kazdej-kolumnie" class="section level2">
-<h2><span class="header-section-number">4.1</span> Krótkie podsumowanie wartości w każdej kolumnie:</h2>
+<h2><span class="header-section-number">5.1</span> Krótkie podsumowanie wartości w każdej kolumnie:</h2>
 <pre class="r"><code>PDB.filtred.data %&gt;% summary() %&gt;% kable()</code></pre>
 <table>
 <thead>
@@ -6554,7 +6559,7 @@ data.nrow.post &lt;- nrow(PDB.filtred.data)</code></pre>
 </table>
 </div>
 <div id="dodatkowa-filtracja-danych" class="section level2">
-<h2><span class="header-section-number">4.2</span> Dodatkowa filtracja danych</h2>
+<h2><span class="header-section-number">5.2</span> Dodatkowa filtracja danych</h2>
 <p>Na podstawie powyższej tabeli można zauważyć, że kolumny:</p>
 <ul>
 <li>local_BAa</li>
@@ -6590,7 +6595,7 @@ data.nrow.post &lt;- nrow(PDB.filtred.data)</code></pre>
     res_id, chain_id))</code></pre>
 </div>
 <div id="korelacja-parametrow" class="section level2">
-<h2><span class="header-section-number">4.3</span> Korelacja parametrów</h2>
+<h2><span class="header-section-number">5.3</span> Korelacja parametrów</h2>
 <p>Do pomocy w przeprowadzeniu obliczeń korelacji parametrów posłużą nam następujące funkcje pomocnicze:</p>
 <pre class="r"><code>count.cor.summary &lt;- function(data, cols.name, func, ...) {
     plot.data &lt;- data %&gt;% dplyr::select(starts_with(paste0(cols.name, &quot;_part_&quot;)))
@@ -6977,7 +6982,7 @@ cat.corr.table()</code></pre>
 <p>Na podstawie wykresu widać, że dane nie są ze sobą silnie skorelowane. Wynika to z faktu, że zwierają one dużo danych opisujących całe macierze i rozkłady specyficzne dla analizy ligandu.</p>
 </div>
 <div id="okreslenie-licznosci-klas" class="section level2">
-<h2><span class="header-section-number">4.4</span> Określenie liczności klas</h2>
+<h2><span class="header-section-number">5.4</span> Określenie liczności klas</h2>
 <p>Określenie ile przykładów ma każda z klas (res_name). Dane w poniższej tabeli zostały posortowane malejąco według liczności klasy.</p>
 <pre class="r"><code>res.names.counts &lt;- PDB.filtred.data %&gt;% group_by(res_name) %&gt;% summarise(liczba = n()) %&gt;% 
     arrange(desc(liczba), res_name)
@@ -12380,7 +12385,7 @@ res.names.counts.head %&gt;% ggplot(aes(res_name, liczba, order = as.numeric(lic
 </div>
 </div>
 <div id="rozkady-liczby-atomow-i-elektronow" class="section level2">
-<h2><span class="header-section-number">4.5</span> Rozkłady liczby atomów i elektronów</h2>
+<h2><span class="header-section-number">5.5</span> Rozkłady liczby atomów i elektronów</h2>
 <p>Na wykresach w osi Y zastosowana została skala kwadratowa, ponieważ niektóre wartości prezentowane na wykresach są tak małe, że przy użyciu skali liniowej nie były widoczne.</p>
 <p>Wykres rozkładu liczby atomów (local_res_atom_non_h_count):</p>
 <pre class="r"><code>ggplot(PDB.filtred.data, aes(x = local_res_atom_non_h_count)) + geom_histogram(binwidth = max((max(PDB.filtred.data$local_res_atom_non_h_count)/100), 
@@ -12402,9 +12407,9 @@ res.names.counts.head %&gt;% ggplot(aes(res_name, liczba, order = as.numeric(lic
 </div>
 </div>
 <div id="zaawansowana-analiza" class="section level1">
-<h1><span class="header-section-number">5</span> Zaawansowana analiza</h1>
+<h1><span class="header-section-number">6</span> Zaawansowana analiza</h1>
 <div id="proba-odtorzenia-wykresu-prowadzacego" class="section level2">
-<h2><span class="header-section-number">5.1</span> Próba odtorzenia wykresu prowadzącego</h2>
+<h2><span class="header-section-number">6.1</span> Próba odtorzenia wykresu prowadzącego</h2>
 <p>Poniżej widoczne są wyniki próby odtworzenia wykresu prowadzącego zajęcia. Jest to alternatywny (i lepszy) sposób przedstawienia powyższych wykresów.</p>
 <p>Podjęto wiele prób dopasowania go do oryginału, który można obejrzeć na <a href="http://www.cs.put.poznan.pl/dbrzezinski/teaching/zed/zed_projekt_2015-2016_analiza.html">tej stronie</a>.</p>
 <p>Ostatecznie zastosowano dwa różne podejścia:</p>
@@ -12453,7 +12458,7 @@ barplot(h2$counts, axes = F, xlim = c(0, top), space = 0, col = &quot;red&quot;,
 </div>
 </div>
 <div id="niezgodnosc-liczby-atomow-i-elektronow" class="section level2">
-<h2><span class="header-section-number">5.2</span> Niezgodność liczby atomów i elektronów</h2>
+<h2><span class="header-section-number">6.2</span> Niezgodność liczby atomów i elektronów</h2>
 <p>Zarówno dla elektronów i dla atomów liczby słownikowe są identyczne dla każdej instancji klasy i dlatego możemy pozwolić na pobranie tych danych przy wykorzystaniu funkcji first().</p>
 <p>Poniżej przedstawiona jest tabela 10 klas z największą niezgodnością liczby atomów (local_res_atom_non_h_count vs dict_atom_non_h_count):</p>
 <pre class="r"><code>PDB.filtred.data %&gt;% dplyr::select(res_name, local = local_res_atom_non_h_count, 
@@ -12750,7 +12755,7 @@ barplot(h2$counts, axes = F, xlim = c(0, top), space = 0, col = &quot;red&quot;,
 <p>Jak widać w powyższych tabelach dla wszystkich przedstawionych ligandów, uzyskane wyniki zawsze nigdy nie przekroczyły wartości opisanych w słownikach.</p>
 </div>
 <div id="rozkad-wartosci-atrybutow-zaczynajacych-sie-od-part_01" class="section level2">
-<h2><span class="header-section-number">5.3</span> Rozkład wartości atrybutów zaczynających się od part_01</h2>
+<h2><span class="header-section-number">6.3</span> Rozkład wartości atrybutów zaczynających się od part_01</h2>
 <p>Poniżej przedstawiony jest rozkład wartości wszystkich atrybutów zaczynających się od part_01. Na wykresach przerywaną ciemnoniebieską linią zaznaczona jest średnia wartość, a liczbowa wartość tej średniej znajduje się pod tytułem wykresu.</p>
 <pre class="r"><code>PDB.part_01.data &lt;- PDB.filtred.data %&gt;% dplyr::select(starts_with(&quot;part_01&quot;))
 
@@ -12997,7 +13002,7 @@ cat.part_01_items.table()</code></pre>
 <p>Z wykresów widać, że wiele atrybutów ma nieliniowy rozkład wartości, przez co wykresy z liniową skalą wartości x niezbyt dobrze wizualizują zmienność danego atrybutu.</p>
 </div>
 <div id="miary-r2-i-rmse" class="section level2">
-<h2><span class="header-section-number">5.4</span> Miary R^2 i RMSE</h2>
+<h2><span class="header-section-number">6.4</span> Miary R^2 i RMSE</h2>
 <p>Poniżej przedstawione są atrybuty o najlepszych wartościach miar R^2 i RMSE dla liczby atomów (local_res_atom_non_h_count).</p>
 <pre class="r"><code># pobranie kolumn tylko numerycznych
 r2.and.rmse.filtred.data &lt;- PDB.filtred.data %&gt;% dplyr::select(which(sapply(., 
@@ -13197,7 +13202,7 @@ data.frame(`R2 Column Name` = names(atom.R2), `R2 Value` = atom.R2, `RMSE Column
 <p>Można zauważyć, że część atrybutów posiada zarówno dobrą miarę R^2 i RMSE, jednak są to wartości słownikowe lub zmienne modelowania, które nie będą znane w trakcie przeprowadzania predykcji. Pocieszający jest fakt, że dla miary RMSE widać atrybuty zaczynające się od part_xx, ponieważ to na nich oparty będzie głównie proces klasyfikacji.</p>
 </div>
 <div id="predykcja-wartosci-atrybutu-res_name" class="section level2">
-<h2><span class="header-section-number">5.5</span> Predykcja wartości atrybutu res_name</h2>
+<h2><span class="header-section-number">6.5</span> Predykcja wartości atrybutu res_name</h2>
 <p>Predykcja została przeprowadzona w oparciu o algorytm random forest z doborem parametrów optymalizujących mtry na przedziale od 10 do 30 co 2. Uczenie odbyło się przy za pomocą kros-walidacja (podział na zbiory 2, powtarzany 5 razy). Trafność klasyfikacji została oszacowana na danych inne niż uczące za pomocą mechanizmu stratyfikowanego zbioru testowego na poziomie 25%.</p>
 <p>W celu maksymalnego odtworzenia sytuacji, jaka występuje przy pracy z nowymi danymi ze zbioru usunięto wszystkie dane słownikowe (atrybuty zaczynające się od “dict”) i parametry modelu (atrybuty zaczynające się od “local”).</p>
 <p>Z powodów wydajnościowych predykcję ograniczono tylko dla 20 najliczniejszych klas i tylko 25 drzew decyzyjnych.</p>
