@@ -56,3 +56,7 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+# Project special files:
+P1_PDB_Analiza/all_summary.txt
+P1_PDB_Analiza/PDB_Analiza_cache/*

@@ -1,0 +1,817 @@
+---
+title: "Raport z analizy danych na przedmiot <br> **Zaawansowana Eksploracja Danych**"
+author: "Michał Bartecki"
+date: "`r format( Sys.time(), '%d %B %Y')`"
+output: 
+  html_document: 
+    fig_caption: yes
+    keep_md: yes
+    number_sections: yes
+    toc: yes
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(
+                     tidy = TRUE
+                     ,eval=TRUE
+                     ,cache=TRUE
+                     )
+```
+
+# Podsumowanie przeprowadzonej analizy
+
+W dostarczonym zbiorze danych liczba atrybutów jest bardzo duża (ok. 800) przez co ich analiza jest bardzo utrudniona. 
+Dodatkowym problemem jest znaczna liczba klas i rozrzut ich liczebności, który waha się od ponad 1100 dla jednej klasy do liczebności 1 dla ponad 2000 klas.
+
+Przy takiej liczbie atrybutów nie można w prosty sposób wykonać wielu podstawowych operacji analizy danych, jak np. narysowania grafu korelacji.
+
+Z kolei rozpatrując liczbę i niezrównoważenie ilościowe klas, problemem jest próba stworzenia klasyfikatora.
+
+Barierą nie do obejścia podczas tej analizy był dla mnie szczególnie brak wiedzy z dziedziny z której pochodzą dane, przez co nieraz zapewne umknęły mi zapewne oczywiste (dla specjalisty z dziedziny Biologii Strukturalnej) wnioski dotyczące widocznych danych i uzyskanych wyników. 
+
+# Przygotowanie do analizy
+ 
+## Wykorzystane biblioteki
+
+Do przygotowania tej analizy zostały wykorzystane następujące biblioteki:
+```{r libs, message=FALSE, eval=TRUE, cache=FALSE}
+library(knitr)
+library(reshape2)
+library(plyr)
+library(dplyr)
+# wykresy
+library(ggplot2)
+library(ggExtra)
+library(corrplot)
+library(RColorBrewer)
+library(MASS)
+# predykcja
+library(caret)
+```
+
+## Zapewnienie powtarzalności wyników
+
+Zapewnienie powtarzalności wyników odbyło się poprzez wykorzystanie:
+[the answer to life the universe and everything](https://en.wikipedia.org/wiki/Phrases_from_The_Hitchhiker%27s_Guide_to_the_Galaxy#Answer_to_the_Ultimate_Question_of_Life.2C_the_Universe.2C_and_Everything_.2842.29)
+
+```{r seed, eval=TRUE}
+set.seed(42)
+```
+
+# Wstępnie przertwarzanie danych
+
+## Wczytywanie danych z pliku
+
+Wczytywanie danych z pliku zostało przyspieszone poprzez stworzenie wcześniej listy klas dla poszczególnych kolumn:
+
+```{r load_data, cache=TRUE, eval=TRUE}
+classes <- rep("numeric",795)
+classes[c(1:5,730,731)] <- "factor"
+
+PDB.whole.file.data <- read.table(
+  file = "all_summary.txt"
+  ,sep = ";"
+  ,header = TRUE
+  ,comment.char = ""
+  ,na.strings=c("nan",""," ")
+  ,colClasses = classes
+  )
+```
+
+## Wstępna filtracja danych 
+
+Ze zbioru danych usuwamy nieinteresujące nas wiersze ( według wartości zmiennej res\_name).
+Wcześniej ten sam efekt próbowałem uzyskać wykorzystując funkcję %in%, jednak musiałem zrezygnować z jej użycia, ponieważ pojawiał się błąd o przekroczeniu limitu pamięci przy próbie wywołania funkcji.
+
+```{r remove_res_names, eval=TRUE}
+PDB.filtred.data <- PDB.whole.file.data %>% 
+  filter(
+    res_name != "DC"
+    ,res_name != "DT"
+    ,res_name != "DU"
+    ,res_name != "DG"
+    ,res_name != "DI"
+    ,res_name != "UNK"
+    ,res_name != "UNX"
+    ,res_name != "UNL"
+    ,res_name != "PR"
+    ,res_name != "PD"
+    ,res_name != "Y1"
+    ,res_name != "EU"
+    ,res_name != "N"
+    ,res_name != "15P"
+    ,res_name != "UQ"
+    ,res_name != "PX4"
+    ,res_name != "NAN"
+    ,!is.na(res_name)
+    ,!is.nan(res_name)
+    )
+```
+
+## Pozostawienie tylko unikatowych par wartości pdb\_code i res\_name
+
+
+```{r leave_only_unique, eval=TRUE}
+data.nrow.pre <- nrow(PDB.filtred.data)
+
+PDB.filtred.data <- PDB.filtred.data %>%
+  distinct(pdb_code, res_name)
+
+data.nrow.post <- nrow(PDB.filtred.data)
+```
+
+Liczba wierszy przed wyczyszczeniem wynosiła `r data.nrow.pre`. 
+Po pozostawieniu tylko unikatowych par wartości pdb\_code i res\_name zostało `r data.nrow.post` wierszy, czyli odfiltrowano `r data.nrow.pre - data.nrow.post` wierszy.
+
+# Podstawowa analiza
+
+## Krótkie podsumowanie wartości w każdej kolumnie:
+
+```{r summary}
+PDB.filtred.data %>%
+  summary() %>%
+  kable()
+```
+
+## Dodatkowa filtracja danych
+
+Na podstawie powyższej tabeli można zauważyć, że kolumny:
+
+* local\_BAa
+* local\_NPa
+* local\_Ra
+* local\_RGa
+* local\_SRGa
+* local\_CCSa
+* local\_CCPa
+* local\_ZOa
+* local\_ZDa
+* local\_ZD\_minus\_a
+* local\_ZD\_plus\_a
+* local\_min
+* fo\_col
+* fc\_col
+* weight\_col
+* grid\_space
+* solvent\_radius
+* solvent\_opening\_radius
+* resolution\_max\_limit
+* part\_step\_FoFc\_std\_min
+* part\_step\_FoFc\_std\_max
+* part\_step\_FoFc\_std\_step
+
+nie wnoszą żadnej informacji do zboru danych, ponieważ albo są puste, albo zawierają identyczne wartości we wszystkich wierszach, więc zostaną usunięte z dalszego przetwarzania.
+
+Dodatkowo z dalszego przetwarzania zostaną usunięte kolumny res\_id i chain\_id - 
+
+```{r remove_useless_cols, eval=TRUE}
+PDB.filtred.data <- 
+  PDB.filtred.data %>%
+  dplyr::select(
+    -c(local_BAa, local_NPa, local_Ra, local_RGa, local_SRGa, local_CCSa, local_CCPa, local_ZOa, local_ZDa, local_ZD_minus_a, local_ZD_plus_a, local_min, fo_col, fc_col, weight_col, grid_space, solvent_radius, solvent_opening_radius, resolution_max_limit, part_step_FoFc_std_min, part_step_FoFc_std_max, part_step_FoFc_std_step, res_id, chain_id)
+    )
+```
+
+## Korelacja parametrów
+
+Do pomocy w przeprowadzeniu obliczeń korelacji parametrów posłużą nam następujące funkcje pomocnicze:
+
+```{r corr_functions, eval=TRUE}
+
+count.cor.summary<-function(data, cols.name, func, ...){
+  plot.data <- data %>% 
+    dplyr::select(starts_with(paste0(cols.name,'_part_')))
+  if (dim(plot.data)[2] > 1) {
+    plot.data <- cor(plot.data,use = "pairwise.complete.obs") 
+    diag(plot.data) <- NA
+    return(func(plot.data,na.rm = TRUE))
+  }else{
+    return(NA)
+  }
+}
+
+make.corrplot<-function(data, order, ...){
+  plot.data <- data 
+  if (dim(plot.data)[2] > 1) {
+    plot.data <- cor(plot.data,use = "pairwise.complete.obs") 
+    plot.data[is.na(plot.data)] <- 0
+    corrplot(plot.data, order = order, method="color", tl.pos="d", type="upper", tl.cex=0.6, tl.col='black', addCoefasPercent = FALSE, pos=2, cl.pos="n")
+  }
+}
+
+```
+
+Ponieważ w danych znajduje się wiele kolumn (69 atrybutów dla 10 ligandów) dotyczących poszczególnych ligandów, wyliczymy maksymalną, średnią i maksymalną korelację dla każdego zestawu atrybutów między ligandami. W tym celu zmienimy chwilowo nazwy kolumn w zbiorze danych, tak żeby opis, z którego ligandu (partu) pochodzą, znalazł się na końcu ich nazwy.
+
+```{r corr_part_xx_count}
+# rename, tak żeby part_xx było na końcu nazwy:
+part_xx_cor_data <- PDB.filtred.data %>%
+  dplyr::select(starts_with("part_")) %>%
+  dplyr::select(which(sapply(., is.numeric)))
+
+colnames(part_xx_cor_data) <- paste0(substring(colnames(part_xx_cor_data), 9),'_', substring(colnames(part_xx_cor_data), 1, 7))
+
+part_col_names <- PDB.filtred.data %>%
+  dplyr::select(starts_with("part_00")) %>%
+  dplyr::select(which(sapply(., is.numeric))) %>%
+  colnames(.) %>%
+  substring(.,9)
+
+part_col_cor_means <- 
+  data.frame(
+    part_col_names = part_col_names,
+    max = sapply(part_col_names, count.cor.summary, data = part_xx_cor_data, func=max),
+    mean = sapply(part_col_names, count.cor.summary, data = part_xx_cor_data, func=mean),
+    min = sapply(part_col_names, count.cor.summary, data = part_xx_cor_data, func=min)
+  )
+
+part_col_cor_means <- 
+  part_col_cor_means %>%
+  arrange(desc(mean),desc(max),desc(min)) %>%
+  t()
+```
+
+Dane w poniższej tabeli są posortowane malejąco według średniej korelacji danego atrybutu.
+
+```{r corr_parts_table}
+part_col_cor_means[2:4,] %>% 
+  kable(col.names = part_col_cor_means[1,])
+```
+
+Na podstawie powyższej tabeli widzimy, że wszystkie atrybuty poszczególnych ligandów są ze sobą skorelowane pozytywnie, ale w różnym stopniu. Poniżej przedstawione są graficznie korelacje dla pierwszego, środkowego i ostatniego atrybutu pod względem korelacji.
+
+
+```{r corr_parts_corrplots, warning=FALSE, results='asis'}
+cat.corr.table<-function(){
+  cat('<table border="0" width="2022">')
+    cat('<tr>')
+      cat('<td>')
+        part_xx_cor_data %>%
+          dplyr::select(starts_with(paste0(part_col_cor_means[1,1],'_part_'))) %>%
+          make.corrplot(order="alphabet") 
+      cat('</td>')
+      cat('<td>')
+        part_xx_cor_data %>%
+          dplyr::select(starts_with(paste0(part_col_cor_means[1,35],'_part_'))) %>%
+          make.corrplot(order="alphabet")
+      cat('</td>')
+      cat('<td>')
+      part_xx_cor_data %>%
+        dplyr::select(starts_with(paste0(part_col_cor_means[1,69],'_part_'))) %>%
+        make.corrplot(order="alphabet")
+      cat('</td>')
+    cat('</tr>')
+  cat('</table>')
+}
+cat.corr.table()
+```
+
+Warto obejrzeć też korelację dla wszystkich atrybutów opisujących ligand. Poniżej przedstawiona jest graficznie korelacja atrybutów dla pierwszego z ligandów (part_00) opisanych w dostarczonych danych.
+Wykres ten byłby bardzo podobny dla każdego ligandu, ponieważ poszczególne atrybuty dla są skorelowane między ligandami.
+
+```{r cor_part_00, fig.height=6.5, fig.width=9, warning=FALSE}
+PDB.filtred.data %>%
+  dplyr::select(starts_with("part_00_")) %>%
+  dplyr::select(which(sapply(., is.numeric))) %>%
+  make.corrplot(order = 'FPC')
+
+```
+
+Jak widać, nie wszystkie atrybuty dotyczące ligandu są między sobą skorelowane, szczególnie odstają od siebie dane dotyczące kształtu i gęstości ligandu.
+
+
+Dodatkowo w danych znalazły się inne numeryczne atrybuty, dla których można wyliczyć korelację. Poniżej przedstawione są jej wyniki:
+
+```{r cor_non_part, fig.height=6.5, fig.width=9, warning=FALSE}
+cor_data <- PDB.filtred.data %>%
+  dplyr::select(-starts_with("part_")) %>%
+  dplyr::select(which(sapply(., is.numeric))) %>%
+  make.corrplot(order='FPC')
+```
+
+Na podstawie wykresu widać, że dane nie są ze sobą silnie skorelowane. Wynika to z faktu, że zwierają one dużo danych opisujących całe macierze i rozkłady specyficzne dla analizy ligandu.
+
+## Określenie liczności klas
+
+Określenie ile przykładów ma każda z klas (res_name). Dane w poniższej tabeli zostały posortowane malejąco według liczności klasy.
+
+```{r res_name_counts}
+res.names.counts <- PDB.filtred.data %>%
+  group_by(res_name) %>%
+  summarise(liczba = n()) %>%
+  arrange(desc(liczba),res_name)
+n <- res.names.counts$res_name
+res.names.counts.row <- as.data.frame(t(res.names.counts[,-1]))
+colnames(res.names.counts.row) <- n
+rownames(res.names.counts.row) <- NULL
+
+res.names.counts.row %>%
+  kable()
+```
+
+Poniżej przedstawione jest liczność 20 najliczniejszych klas: 
+
+```{r res_name_max_counts}
+
+res.names.counts.head <- res.names.counts %>%
+  head(10) 
+res.names.counts.head$res_name <- reorder(res.names.counts.head$res_name, res.names.counts.head$liczba)
+
+res.names.counts.head %>% 
+  ggplot(aes(res_name, liczba, order=as.numeric(liczba))) +
+    geom_bar(stat="identity", show_guide=FALSE, fill="#00007F", colour= "black") + 
+    coord_flip() + 
+    ggtitle("Najliczniejsze klasy w zborze danych") +
+    theme_bw() +
+    theme(axis.title.x = element_blank(), axis.title.y = element_blank(), legend.position="none")
+```
+
+## Rozkłady liczby atomów i elektronów
+
+Na wykresach w osi Y zastosowana została skala kwadratowa, ponieważ niektóre wartości prezentowane na wykresach są tak małe, że przy użyciu skali liniowej nie były widoczne.
+
+Wykres rozkładu liczby atomów (local\_res\_atom\_non\_h\_count): 
+
+```{r local_res_atom_non_h_count}
+ggplot(PDB.filtred.data, aes(x=local_res_atom_non_h_count)) +
+  geom_histogram(
+    binwidth = max((max(PDB.filtred.data$local_res_atom_non_h_count)/100),1)
+    ,colour= "black"
+    ,fill="red"
+    ) +
+  scale_y_sqrt() +
+  ggtitle("Rozkładów liczby atomów (local_res_atom_non_h_count) ") +
+  theme_bw() + theme(axis.title.x = element_blank(), axis.title.y = element_blank(), legend.position="none")
+```
+
+Wykres rozkładu liczby elektronów (local\_res\_atom\_non\_h\_electron\_sum):
+
+```{r local_res_atom_non_h_electron_sum}
+ggplot(PDB.filtred.data, aes(x=local_res_atom_non_h_electron_sum)) +
+  geom_histogram(
+    binwidth = max((max(PDB.filtred.data$local_res_atom_non_h_electron_sum)/100),1)
+    ,colour= "black"
+    ,fill="red"
+    ) + 
+  scale_y_sqrt() +
+  ggtitle("Rozkładów liczby elektronów (local_res_atom_non_h_electron_sum) ") +
+  theme_bw() + theme(axis.title.x = element_blank(), axis.title.y = element_blank(), legend.position="none")
+```
+
+Na powyższych wykresach widać duże niezrównoważenie liczby atomów i elektronów w analizowanej próbce danych.
+Szczególnie liczne są cząsteczki składające się tylko 1 atomu, natomiast cząsteczek o liczbie atomów powyżej 50, lub liczbie elektronów powyżej 400 prawie nie ma.
+
+# Zaawansowana analiza
+
+## Próba odtorzenia wykresu prowadzącego
+
+Poniżej widoczne są wyniki próby odtworzenia wykresu prowadzącego zajęcia. Jest to alternatywny (i lepszy) sposób przedstawienia powyższych wykresów. 
+
+Podjęto wiele prób dopasowania go do oryginału, który można obejrzeć na [tej stronie](http://www.cs.put.poznan.pl/dbrzezinski/teaching/zed/zed_projekt_2015-2016_analiza.html).
+
+Ostatecznie zastosowano dwa różne podejścia:
+
+* Pierwsze oparte o wykorzystanie bibliotek [ggplot2](http://docs.ggplot2.org/current/) i [ggExtra](https://cran.r-project.org/web/packages/ggExtra/vignettes/overview.html)
+* Drugie wykorzystuje metodę opisaną na bibliotece [MASS](https://cran.r-project.org/web/packages/MASS/MASS.pdf) opisaną na stronie [r-bloggers.com: 5-ways-to-do-2d-histograms-in-r](http://www.r-bloggers.com/5-ways-to-do-2d-histograms-in-r/)
+
+```{r odtwarzanie}
+plot.data <- PDB.filtred.data %>%
+  dplyr::select(local_res_atom_non_h_electron_sum,local_res_atom_non_h_count) %>%
+  filter(local_res_atom_non_h_electron_sum <= 700)
+
+p <- 
+  ggplot(plot.data, aes(x = local_res_atom_non_h_electron_sum, y = local_res_atom_non_h_count)) +
+  stat_density2d(geom="tile", aes(fill = ..density..), contour = FALSE, na.rm = TRUE, n = c(400)) +
+  scale_fill_gradientn(colours = rev(brewer.pal(11,'Spectral'))) + 
+  scale_x_continuous(expand = c(0, 0)
+                     , breaks=seq(100,600,by=100)
+                     , limits=c(0, 650)
+                     ) + 
+  scale_y_continuous(expand = c(0, 0)
+                     , breaks=seq(20,100,by=20)
+                     , limits=c(0, max(plot.data$local_res_atom_non_h_count))
+                     ) +
+  theme_bw() +  
+  theme(axis.title.x = element_blank(), axis.title.y = element_blank(), legend.position="none")
+
+ggExtra::ggMarginal(p
+                   ,type = "histogram"
+                   ,colour = "black"
+                   ,fill = "red"
+                   ,xparams = list(binwidth = max((max(plot.data$local_res_atom_non_h_electron_sum)/150),1)
+                                  )
+                   ,yparams = list(binwidth = max((max(plot.data$local_res_atom_non_h_count)/100),1)
+                                  )
+                   )
+
+# Adjust binning (interpolate - can be computationally intensive for large datasets)
+h1 <- hist(plot.data$local_res_atom_non_h_electron_sum, breaks=150, plot=F)
+h2 <- hist(plot.data$local_res_atom_non_h_count, breaks=100, plot=F)
+top <- max(h1$counts, h2$counts)
+k <- kde2d(plot.data$local_res_atom_non_h_electron_sum, plot.data$local_res_atom_non_h_count, n=400)
+
+# margins
+oldpar <- par()
+par(mar=c(3,3,1,1))
+layout(matrix(c(2,0,1,3),2,2,byrow=T),c(3,1), c(1,3))
+image(k, col=colorRampPalette(rev(brewer.pal(11,'Spectral')))(32)) #plot the image
+par(mar=c(0,2,1,0))
+barplot(h1$counts, axes=F, ylim=c(0, top), space=0, col='red')
+par(mar=c(2,0,0,1))
+barplot(h2$counts, axes=F, xlim=c(0, top), space=0, col='red', horiz=T)
+  
+```
+
+## Niezgodność liczby atomów i elektronów
+
+Zarówno dla elektronów i dla atomów liczby słownikowe są identyczne dla każdej instancji klasy i dlatego możemy pozwolić na pobranie tych danych przy wykorzystaniu funkcji first().
+
+Poniżej przedstawiona jest tabela 10 klas z największą niezgodnością liczby atomów (local\_res\_atom\_non\_h\_count vs dict\_atom\_non\_h\_count):
+
+```{r tabela_1}
+
+PDB.filtred.data %>%
+  dplyr::select(
+    res_name, 
+    local = local_res_atom_non_h_count, 
+    dict = dict_atom_non_h_count
+    ) %>% 
+  group_by(res_name) %>%
+  summarise(
+    count = n(),
+    dict = first(dict),
+    min_local = min(local),
+    avg_local = round(mean(local),2),
+    max_local = max(local),
+    min_diff = min(abs(local-dict)),
+    avg_diff = round(mean(abs(local-dict)),2),
+    max_diff = max(abs(local-dict)),
+    niezgodnosc = max_diff-min_diff
+    ) %>%
+  arrange(desc(niezgodnosc),res_name) %>%
+  head(10)%>%
+  kable()
+
+```
+
+Poniżej przedstawiona jest tabela 10 klas z największą niezgodnością liczby atomów (local\_res\_atom\_non\_h\_electron\_sum vs dict\_atom\_non\_h\_electron\_sum):
+
+```{r tabela_2}
+
+PDB.filtred.data %>%
+  dplyr::select(
+    res_name,
+    local = local_res_atom_non_h_electron_sum,
+    dict = dict_atom_non_h_electron_sum
+    ) %>% 
+  group_by(res_name) %>%
+  summarise(
+    count = n(),
+    dict = first(dict),
+    min_local = min(local),
+    avg_local = round(mean(local),2),
+    max_local = max(local),
+    min_diff = min(abs(local-dict)),
+    avg_diff = round(mean(abs(local-dict)),2),
+    max_diff = max(abs(local-dict)),
+    niezgodnosc = max_diff-min_diff
+    ) %>%
+  arrange(desc(niezgodnosc),res_name) %>%
+  head(10)%>%
+  kable()
+
+```
+
+Jak widać w powyższych tabelach dla wszystkich przedstawionych ligandów, uzyskane wyniki zawsze nigdy nie przekroczyły wartości opisanych w słownikach. 
+
+## Rozkład wartości atrybutów zaczynających się od part_01
+
+Poniżej przedstawiony jest rozkład wartości wszystkich atrybutów zaczynających się od part_01.
+Na wykresach przerywaną ciemnoniebieską linią zaznaczona jest średnia wartość, a liczbowa wartość tej średniej znajduje się pod tytułem wykresu.
+
+```{r part_01_items, results='asis'}
+PDB.part_01.data <- PDB.filtred.data %>%
+  dplyr::select(starts_with("part_01"))
+
+cat.part_01_items.table<-function(){
+  cat(paste0('<table border="0" width="',dim(PDB.part_01.data)[2]*764,'">'))
+    cat('<tr>')
+      for(i in 1:dim(PDB.part_01.data)[2]){
+        PDB.part_01.col.data <<- 
+          PDB.part_01.data[,i] %>% 
+          melt
+        
+        PDB.part_01.col.data.mean <<- mean(PDB.part_01.col.data$value, na.rm = TRUE)
+        PDB.part_01.col.data.binwidth <<- max((max(PDB.part_01.col.data$value, na.rm = TRUE) - min(PDB.part_01.col.data$value, na.rm = TRUE))/100)
+        PDB.part_01.col.data.title <<- paste(colnames(PDB.part_01.data[i]),'\nśrednia =', signif(PDB.part_01.col.data.mean,3))
+      
+        p <- ggplot(PDB.part_01.col.data, aes(x = value)) + 
+          geom_histogram(
+            binwidth = PDB.part_01.col.data.binwidth
+            ,origin = (-0.5 * PDB.part_01.col.data.binwidth)
+            ,colour= "black"
+            ,fill="red"
+            ) + 
+          geom_vline(mapping = aes(xintercept=PDB.part_01.col.data.mean), linetype="dashed", colour="#00007F", size=1) +
+          theme_bw()  +  
+          scale_y_sqrt() +
+          theme(legend.position="none") + 
+          ggtitle(PDB.part_01.col.data.title) +
+          theme(axis.title.x = element_blank(), axis.title.y = element_blank(), legend.position="none")
+          
+        cat('<td>')
+          print(p)
+        cat('</td>')
+      }
+    cat('</tr>')
+  cat('</table>')
+}
+cat.part_01_items.table()
+```
+
+Z wykresów widać, że wiele atrybutów ma nieliniowy rozkład wartości, przez co wykresy z liniową skalą wartości x niezbyt dobrze wizualizują zmienność danego atrybutu.
+
+## Miary R^2 i RMSE
+
+Poniżej przedstawione są atrybuty o najlepszych wartościach miar R^2 i RMSE dla liczby atomów (local\_res\_atom\_non\_h\_count).
+
+```{r atom_r2_i_rmse}
+# pobranie kolumn tylko numerycznych
+r2.and.rmse.filtred.data <- PDB.filtred.data %>%
+  dplyr::select(which(sapply(., is.numeric)))
+  
+# wyliczenie miar R2 dla local_res_atom_non_h_count
+atom.R2 <- r2.and.rmse.filtred.data %>%
+  dplyr::select(-local_res_atom_non_h_count) %>%
+  sapply(function(x){
+           mylm <- lm(x~r2.and.rmse.filtred.data$local_res_atom_non_h_count)
+           theR2 <- summary(mylm)$r.squared
+           return(theR2)
+         }
+        ) %>%
+  (function(x){return(x[order(x,decreasing = TRUE,na.last = TRUE)])}) %>%
+  head(10)
+
+# wyliczenie miar RMSE dla local_res_atom_non_h_count
+atom.RMSE <- r2.and.rmse.filtred.data %>%
+  dplyr::select(-local_res_atom_non_h_count) %>%
+  sapply(function(x){
+           theRMSE <- sqrt( mean( (x-r2.and.rmse.filtred.data$local_res_atom_non_h_count)^2 , na.rm = TRUE ) )
+           return(theRMSE)
+         }
+        ) %>%
+  (function(x){return(x[order(x,decreasing = FALSE,na.last = FALSE)])}) %>%
+  head(10)
+
+# wyświetlenie wartości dla local_res_atom_non_h_count
+data.frame("R2 Column Name" = names(atom.R2)
+          ,"R2 Value" = atom.R2
+          ,"RMSE Column Name" = names(atom.RMSE)
+          ,"RMSE Value" = atom.RMSE
+          ,row.names=NULL
+          ) %>%
+  kable()
+
+```
+
+
+Poniżej przedstawione są atrybuty o najlepszych wartościach miar R^2 i RMSE dla liczby elektronów (local\_res\_atom\_non\_h\_electron\_sum).
+
+```{r electron_r2_i_rmse}
+# wyliczenie miar R2 dla local_res_atom_non_h_electron_sum
+electron.R2 <- r2.and.rmse.filtred.data %>%
+  dplyr::select(-local_res_atom_non_h_electron_sum) %>%
+  sapply(function(x){
+           mylm <- lm(x~r2.and.rmse.filtred.data$local_res_atom_non_h_electron_sum)
+           theR2 <- summary(mylm)$r.squared
+           return(theR2)
+         }
+        ) %>%
+  (function(x){return(x[order(x,decreasing = TRUE,na.last = TRUE)])}) %>%
+  head(10)
+
+# wyliczenie miar RMSE dla local_res_atom_non_h_electron_sum
+electron.RMSE <- r2.and.rmse.filtred.data %>%
+  dplyr::select(-local_res_atom_non_h_electron_sum) %>%
+  sapply(function(x){
+           theRMSE <- sqrt( mean( (x-r2.and.rmse.filtred.data$local_res_atom_non_h_electron_sum)^2 , na.rm = TRUE ) )
+           return(theRMSE)
+         }
+        ) %>%
+  (function(x){return(x[order(x,decreasing = FALSE,na.last = FALSE)])}) %>%
+  head(10)
+
+# wyświetlenie wartości dla local_res_atom_non_h_electron_sum
+data.frame("R2 Column Name" = names(atom.R2)
+          ,"R2 Value" = atom.R2
+          ,"RMSE Column Name" = names(atom.RMSE)
+          ,"RMSE Value" = atom.RMSE
+          ,row.names=NULL
+          ) %>%
+  kable()
+```
+
+Można zauważyć, że część atrybutów posiada zarówno dobrą miarę R^2 i RMSE, jednak są to wartości słownikowe lub zmienne modelowania, które nie będą znane w trakcie przeprowadzania predykcji. Pocieszający jest fakt, że dla miary RMSE widać atrybuty zaczynające się od part_xx, ponieważ to na nich oparty będzie głównie proces klasyfikacji.  
+
+## Predykcja wartości atrybutu res_name 
+
+Predykcja została przeprowadzona w oparciu o algorytm random forest z doborem parametrów optymalizujących mtry na przedziale od 10 do 30 co 2. Uczenie odbyło się przy za pomocą kros-walidacja (podział na zbiory 2, powtarzany 5 razy).
+Trafność klasyfikacji została oszacowana na danych inne niż uczące za pomocą mechanizmu stratyfikowanego zbioru testowego na poziomie 25%. 
+
+W celu maksymalnego odtworzenia sytuacji, jaka występuje przy pracy z nowymi danymi ze zbioru usunięto wszystkie dane słownikowe (atrybuty zaczynające się od "dict") i parametry modelu (atrybuty zaczynające się od "local"). 
+
+Z powodów wydajnościowych predykcję ograniczono tylko dla 20 najliczniejszych klas i tylko 25 drzew decyzyjnych.
+
+```{r prediction, message=FALSE}
+set.seed(42)
+
+res_name.prediction.classes <- 
+  res.names.counts %>%
+  head(20)
+
+res_name.prediction.dataset <- PDB.filtred.data %>%  
+  filter(res_name %in% as.character(res_name.prediction.classes[['res_name']])) %>% 
+  dplyr::select(-starts_with('dict_'), -starts_with('local_'), -c(title,pdb_code) )
+
+res_name.prediction.dataset$res_name <- as.character(res_name.prediction.dataset$res_name)
+res_name.prediction.dataset$res_name <- as.factor(res_name.prediction.dataset$res_name)
+
+# need to impute missing values for data - by brute force:
+res_name.prediction.dataset[is.na(res_name.prediction.dataset)] <- -999999
+
+# stratyfikacja:
+inTraining <- 
+    createDataPartition(
+        y = res_name.prediction.dataset$res_name,
+        p = .75,
+        list = FALSE)
+
+training <- res_name.prediction.dataset[ inTraining,]
+testing  <- res_name.prediction.dataset[-inTraining,]
+
+# praametry predykcji:
+predGrid <- expand.grid(mtry = (5:15)*2)
+predCtrl <- trainControl(
+    method = "repeatedcv",
+    number = 2,
+    repeats = 5)
+
+# predykcja:
+set.seed(42)
+predFit <- train(res_name ~ .,
+             data = training,
+             method = "rf",
+             trControl = predCtrl,
+             tuneGrid = predGrid,
+             ntree = 25)
+
+predClasses <- predict(predFit, newdata = testing)
+
+cm <- confusionMatrix(data = predClasses, testing$res_name)
+
+```
+
+Poniżej przedstawiony jest wynik optymalizacja parametrów przez bibliotekę Caret:
+
+```{r predFit}
+predFit
+```
+
+Dla stratyfikowanego zbioru testowego wykonano predykcję i osiągnięto następujące wyniki:
+
+```{r cm_pars}
+cm$overall
+cm$byClass %>% kable()
+```
+
+Poniżej przedstawiona jest macierz predykcji. Zauważyć można duży błąd dla niektórych klas częściowo wynika on z różnorodnej liczności zbiorów danych. Ponadto na dużą niedokładność predykcji ma wpływ mała liczba wykorzystanych drzew decyzyjnych.
+
+
+```{r color_table, results='asis'}
+cat.cm.tab<-function(cm.matrix){
+  cat('<table border="0" style="width:100%">')
+    # header: 
+    cat('<thead>')
+      cat('<tr>')
+        cat('<td style="text-align:left;">   </td>')
+        for(i in 1:dim(cm.matrix)[1]){
+          cat(paste('<td style="text-align:center;"><b>',colnames(cm.matrix)[i],'</b></td>'))
+        }
+      cat('</tr>')
+    cat('</thead>')
+    
+    # body:
+    cat('<tbody>')
+      for(i in 1:dim(cm.matrix)[1])
+      {
+        cat('<tr>')
+          cat(paste('<td style="text-align:right;"><b>',colnames(cm.matrix)[i],'</b></td>'))
+         
+          for(j in 1:dim(cm.matrix)[2])
+          {
+            if(i==j){
+              cat(
+                paste0('<td style="text-align:center;" bgcolor="'
+                      ,colorRampPalette(c( "#7FFF7F", "cyan", "#007FFF"))(sum(cm.matrix[,j])+1)[cm.matrix[i,j]+1]
+                      ,'"><font color="black"><b>'
+                      ,cm.matrix[i,j]
+                      ,'</b></font></td>'
+                      )
+                )
+            }else if(!is.na(cm.matrix[i,j])){
+              if(cm.matrix[i,j] != 0){
+                cat(
+                  paste0('<td style="text-align:center;" bgcolor="'
+                        ,colorRampPalette(c("yellow", "#FF7F00", "red", "#7F0000"))(sum(cm.matrix[,j])+1)[cm.matrix[i,j]+1]
+                        ,'"><font color="black">'
+                        ,cm.matrix[i,j]
+                        ,'</font></td>'
+                        )
+                  )                
+              }else{
+                cat(
+                  paste0('<td style="text-align:center;">'
+                        ,cm.matrix[i,j]
+                        ,'</td>'
+                        )
+                  )                
+                
+              }
+            }else{
+              cat('<td/>')
+            }
+          }
+        cat('</tr>')
+      }
+    cat('</tbody>')
+  cat('</table>')
+}
+cat.cm.tab(cm$table)
+```
+
+
+Wykonano również predykcję dla tych samych parametrów, jednak bez usuwania danych słownikowe i parametrów modelu. W jej wyniku uzyskano znacznie lepsze wyniki:
+
+
+```{r prediction2, message=FALSE}
+set.seed(42)
+
+res_name.prediction.classes <- 
+  res.names.counts %>%
+  head(20)
+
+res_name.prediction.dataset2 <- PDB.filtred.data %>%  
+  filter(res_name %in% as.character(res_name.prediction.classes[['res_name']])) %>% 
+  dplyr::select(-c(title,pdb_code) )
+
+res_name.prediction.dataset2$res_name <- as.character(res_name.prediction.dataset2$res_name)
+res_name.prediction.dataset2$res_name <- as.factor(res_name.prediction.dataset2$res_name)
+
+# need to impute missing values for data - by brute force:
+res_name.prediction.dataset2[is.na(res_name.prediction.dataset2)] <- -999999
+
+# stratyfikacja:
+inTraining <- 
+    createDataPartition(
+        y = res_name.prediction.dataset2$res_name,
+        p = .75,
+        list = FALSE)
+
+training2 <- res_name.prediction.dataset2[ inTraining,]
+testing2  <- res_name.prediction.dataset2[-inTraining,]
+
+# predykcja:
+set.seed(42)
+predFit2 <- train(res_name ~ .,
+             data = training2,
+             method = "rf",
+             trControl = predCtrl,
+             tuneGrid = predGrid,
+             ntree = 25)
+
+predClasses2 <- predict(predFit2, newdata = testing2)
+
+cm2 <- confusionMatrix(data = predClasses2, testing2$res_name)
+
+```
+
+```{r predFit2}
+predFit
+```
+
+
+Dla stratyfikowanego zbioru testowego ponownie wykonano predykcję i osiągnięto następujące wyniki:
+
+
+```{r cm_pars2}
+cm$overall
+cm$byClass %>% kable()
+```
+
+
+Poniżej przedstawiona jest macierz dla nowej predykcji. Zauważyć można znaczny spadek liczby błędów. Na tej podstawie można stwierdzić, że dane słownikowe i parametry modelu mają bardzo duży wpływ na jakość klasyfikacji analizowanych danych. 
+
+
+```{r color_table2, results='asis'}
+cat.cm.tab(cm2$table)
+```
